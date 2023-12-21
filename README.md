@@ -1,5 +1,6 @@
 # "Cube Libre" 
 - various digital cube & polygon tests for `pygame` w/ `opengl`
+- each contain different types of minimalistic templates and tests
 - by FlyingFathead (with a little help from imaginary digital friends) // dec 2023
 - https://github.com/FlyingFathead/pygame-opengl-polygon-demos
 
