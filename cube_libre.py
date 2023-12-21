@@ -1,13 +1,15 @@
-# "Cube Libre" v0.05
+# "Cube Libre" v0.07
 #
-# By FlyingFathead (w/ a little help from digital friends) // Dec 2023
-# https://github.com/FlyingFathead
+# By FlyingFathead (w/ a little help from imaginary digital friends) // Dec 2023
+# https://github.com/FlyingFathead/pygame-opengl-polygon-demos
 #
 # changelog:
+# v0.07 - flash and reset when all cubes are gone
+# v0.06 - reset on complete cube loss
 # v0.05 - wild horizons
 # v0.04 - moar
-# v.0.03 - horizon, navigation
-# v.0.02 - solid color
+# v0.03 - horizon, navigation
+# v0.02 - solid color
 
 import pygame
 from pygame.locals import DOUBLEBUF, OPENGL
@@ -108,6 +110,7 @@ class Cube:
         self.is_destroyed = False
         self.flash_duration = 0.2  # Duration of flash effect in seconds
         self.time_since_destroyed = 0  # Time since the cube was destroyed
+        self.rotation = 0.0  # Initialize rotation angle
 
     @staticmethod
     def random_color():
@@ -121,7 +124,11 @@ class Cube:
         # Change color to white/grey for the flash effect
         self.color = [0.8, 0.8, 0.8]
         # Set velocity for flying off
-        self.velocity = [random.uniform(-1, 1), random.uniform(1, 2), random.uniform(-1, 1)]        
+        # self.velocity = [random.uniform(-1, 1), random.uniform(1, 2), random.uniform(-1, 1)]        
+        # Set lower velocity for flying off
+        self.velocity = [random.uniform(-0.5, 0.5), random.uniform(0.5, 1), random.uniform(-0.5, 0.5)]
+        # Add angular velocity for swirling effect
+        self.angular_velocity = random.uniform(-3, 3) # Degrees per second
         self.is_destroyed = True
         self.time_since_destroyed = 0  # Reset timer on destruction        
 
@@ -138,8 +145,8 @@ move_speed = 0.1
 horizon_y = -5
 
 # Initialize a destruction timer
-destruction_cooldown = 0.0
-max_destruction_rate = 1.0  # One cube per second
+destruction_cooldown = 1.0
+max_destruction_rate = 0.5  # 1.0 = One cube per second
 
 # Movement function updated for x and y directions
 def move_cubes(delta_x, delta_y):
@@ -157,7 +164,6 @@ def check_collision_with_horizon(cube):
     return False
 
 # Update cube positions based on velocity
-# In the update_cubes function
 def update_cubes(delta_time):
     for x in range(-cube_size // 2, cube_size // 2):
         for y in range(-cube_size // 2, cube_size // 2):
@@ -165,11 +171,22 @@ def update_cubes(delta_time):
                 cube = cubes[x][y][z]
                 if cube.is_destroyed:
                     cube.time_since_destroyed += delta_time
-                    print(f"Cube {x},{y},{z} time since destroyed: {cube.time_since_destroyed}")  # Debugging statement
                     if cube.time_since_destroyed > cube.flash_duration:
+                        # Only move cubes after the flash duration
                         cube.x += cube.velocity[0] * delta_time
                         cube.y += cube.velocity[1] * delta_time
                         cube.z += cube.velocity[2] * delta_time
+                        cube.rotation += cube.angular_velocity * delta_time  # This line should now work
+
+    """ # Render the scene multiple times with decreasing opacity to simulate motion blur
+    for i in range(3):
+        glPushMatrix()
+        # Apply transformation for motion blur effect
+        glTranslatef(i * blur_factor, i * blur_factor, 0)  # Adjust blur_factor as needed
+        glColor4f(1, 1, 1, 0.5 / (i + 1))  # Decrease alpha to make it more transparent
+        # Draw the scene again (you need to adjust this to match your drawing code)
+        draw_scene()
+        glPopMatrix() """
 
 # draw the wireframe horizon
 def draw_wireframe_horizon():
@@ -205,6 +222,69 @@ def destroy_one_cube_per_layer():
                         layer_affected = True
                     break
 
+def gradient_color(y):
+    # Assuming the vertical range is from -cube_size/2 to cube_size/2
+    gradient_start = [1, 0, 0] # Red at the top
+    gradient_end = [0, 0, 1] # Blue at the bottom
+    factor = (y + cube_size/2) / cube_size # Normalize y to range [0, 1]
+    color = [
+        gradient_start[0] * (1 - factor) + gradient_end[0] * factor,
+        gradient_start[1] * (1 - factor) + gradient_end[1] * factor,
+        gradient_start[2] * (1 - factor) + gradient_end[2] * factor
+    ]
+    return color
+
+def draw_scene():
+    # Rendering
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    glPushMatrix()
+
+    # Rotate the entire scene
+    glRotatef(angle_x, 1, 0, 0)
+    glRotatef(angle_y, 0, 1, 0)
+    glRotatef(angle_z, 0, 0, 1)
+
+    # Draw wireframe horizon
+    draw_wireframe_horizon()
+
+    # Apply gradient in the cube rendering loop
+    for x in range(-cube_size // 2, cube_size // 2):
+        for y in range(-cube_size // 2, cube_size // 2):
+            for z in range(-cube_size // 2, cube_size // 2):
+                cube = cubes[x][y][z]
+                glPushMatrix()
+                glTranslatef(cube.x * step, cube.y * step, cube.z * step)
+                gradient_color_value = gradient_color(cube.y)
+                glColor3fv(gradient_color_value)
+                glBindVertexArray(vao)
+                glDrawArrays(GL_QUADS, 0, 24)
+                glBindVertexArray(0)
+                glPopMatrix()
+
+    """ # Draw cubes with rotation around their own center
+    for x in range(-cube_size // 2, cube_size // 2):
+        for y in range(-cube_size // 2, cube_size // 2):
+            for z in range(-cube_size // 2, cube_size // 2):
+                cube = cubes[x][y][z]
+                glPushMatrix()
+                # Translate to cube position
+                glTranslatef(cube.x * step, cube.y * step, cube.z * step)
+                
+                # Apply individual cube rotation
+                # Comment out or remove the lines below to stop individual cube rotation
+                # glRotatef(angle_x, 1, 0, 0)
+                # glRotatef(angle_y, 0, 1, 0)
+                # glRotatef(angle_z, 0, 0, 1)
+
+                # Set cube color and draw
+                glColor3fv(cube.color)
+                glBindVertexArray(vao)
+                glDrawArrays(GL_QUADS, 0, 24)
+                glBindVertexArray(0)
+                glPopMatrix() """
+
+    glPopMatrix()    
+
 def move_cubes(direction, move_speed):
     # Choose a single cube to move based on direction
     # For simplicity, let's always move the cube at the center
@@ -219,6 +299,46 @@ def move_cubes(direction, move_speed):
         cube_to_move.y += move_speed
     elif direction == "DOWN":
         cube_to_move.y -= move_speed
+
+# check if all cubes are destroyed
+def all_cubes_destroyed(cubes):
+    return all(cube.is_destroyed for row in cubes for layer in row for cube in layer)
+
+# reset all cubes
+def reset_cubes(cubes):
+    # Logic to reset the cubes to their initial state
+    for x in range(-cube_size // 2, cube_size // 2):
+        for y in range(-cube_size // 2, cube_size // 2):
+            for z in range(-cube_size // 2, cube_size // 2):
+                cubes[x][y][z] = Cube(x, y, z)  # Recreate the cube
+
+# flash the screen
+def flash_screen(duration=1000, steps=255):
+    # Duration of the flash in milliseconds
+    # Steps are how many levels of fading we have
+
+    # Fade to white
+    for i in range(steps):
+        alpha = i / steps
+        glClearColor(alpha, alpha, alpha, 1)
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        pygame.display.flip()
+        pygame.time.wait(duration // (steps * 2))  # Wait proportionally to fade duration
+
+    # Hold the white screen
+    pygame.time.wait(duration // steps)  # Hold the white screen for a moment
+
+    # Fade back into the game
+    for i in range(steps, -1, -1):
+        alpha = i / steps
+        glClearColor(alpha, alpha, alpha, 1)
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        draw_scene()  # Draw the game scene with the faded alpha overlay
+        pygame.display.flip()
+        pygame.time.wait(duration // (steps * 2))  # Wait proportionally to fade duration
+
+    # Reset clear color to game's background color
+    glClearColor(0, 0, 0, 1)  # Assuming black is the game's background color
 
 # Main game loop
 while True:
@@ -264,38 +384,13 @@ while True:
     # Update cube positions and flash status
     update_cubes(delta_time)
 
-    # Rendering
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-    glPushMatrix()
+    # Check if all cubes are destroyed
+    if all_cubes_destroyed(cubes):
+        flash_screen()  # Flash the screen
+        reset_cubes(cubes)  # Reset the cubes to start over
+        continue  # Skip the rest of the loop to start with a fresh screen
 
-    # Rotate the entire scene
-    glRotatef(angle_x, 1, 0, 0)
-    glRotatef(angle_y, 0, 1, 0)
-    glRotatef(angle_z, 0, 0, 1)
-
-    # Draw wireframe horizon
-    draw_wireframe_horizon()
-
-    # Draw cubes with rotation around their own center
-    for x in range(-cube_size // 2, cube_size // 2):
-        for y in range(-cube_size // 2, cube_size // 2):
-            for z in range(-cube_size // 2, cube_size // 2):
-                cube = cubes[x][y][z]
-                glPushMatrix()
-                # Translate to cube position
-                glTranslatef(cube.x * step, cube.y * step, cube.z * step)
-                # Apply individual cube rotation
-                glRotatef(angle_x, 1, 0, 0)
-                glRotatef(angle_y, 0, 1, 0)
-                glRotatef(angle_z, 0, 0, 1)
-                # Set cube color and draw
-                glColor3fv(cube.color)
-                glBindVertexArray(vao)
-                glDrawArrays(GL_QUADS, 0, 24)
-                glBindVertexArray(0)
-                glPopMatrix()
-
-    glPopMatrix()
+    draw_scene()
 
     # Update sway angles
     angle_x += rotation_speed
@@ -305,6 +400,8 @@ while True:
     pygame.display.flip()
     pygame.time.wait(10)
 
+
+# old
 """ # Main game loop
 while True:
     for event in pygame.event.get():
@@ -391,10 +488,7 @@ while True:
     pygame.display.flip()
     pygame.time.wait(10)
  """
-
-
 # old stuff ...
-
 """ # Check for collisions
     for x in range(-cube_size // 2, cube_size // 2):
         for y in range(-cube_size // 2, cube_size // 2):
