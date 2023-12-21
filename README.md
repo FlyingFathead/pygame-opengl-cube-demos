@@ -1,6 +1,6 @@
 # "Cube Libre" 
 - various digital cube & polygon tests for `pygame` w/ `opengl`
-- each contain different types of minimalistic templates and tests
+- each demo comes with a different approach to multi-cube drawing
 - by FlyingFathead (with a little help from imaginary digital friends) // dec 2023
 - https://github.com/FlyingFathead/pygame-opengl-polygon-demos
 
@@ -20,4 +20,4 @@ Cube Libre is a Pygame and OpenGL demonstration project that explores the world 
 
 ## How to Run
 
-To run "Cube Libre," make sure you have Python, Pygame, and OpenGL installed on your system. You can then execute i.e. `cube_libre.py` to start the demo.
+To run "Cube Libre," make sure you have Python, Pygame, and OpenGL installed on your system. You can then execute i.e. `cube_libre.py` to start the demo. In `cube_libre.py` (which is the main demo at the moment), you can control the cube with either W,A,S,D keys or arrows. Colliding with the grid causes the cube to take damage (1 lost cube per impact within given tick timer limit), when all cubes are lost, the scene will reset.
