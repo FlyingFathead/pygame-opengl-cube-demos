@@ -17,6 +17,7 @@ To run "Cube Libre," make sure you have Python, Pygame, and OpenGL installed on 
 
 ## Changelog
 `cube_libre.py`
+- v0.09 - reset cycle for cube animation
 - v0.08 - Reverted to this
 - v0.07 - Flash and reset when all cubes are gone
 - v0.06 - Reset on complete cube loss
