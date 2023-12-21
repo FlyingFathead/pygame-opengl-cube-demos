@@ -1,9 +1,10 @@
-# "Cube Libre" v0.09
+# "Cube Libre" v0.10
 #
 # By FlyingFathead (w/ a little help from imaginary digital friends) // Dec 2023
 # https://github.com/FlyingFathead/pygame-opengl-polygon-demos
 #
 # changelog:
+# v0.10 - proximity gradient + shake effect on collision
 # v0.09 - cube animation reset cycle
 # v0.08 - reverted to this
 # v0.07 - flash and reset when all cubes are gone
@@ -174,6 +175,12 @@ def check_collision_with_horizon(cube):
 
 # Update cube positions based on velocity
 def update_cubes(delta_time):
+    global screen_shake_timer, flash_timer
+    # Reduce timers based on the time passed since the last frame
+    #if screen_shake_timer > 0:
+    #    screen_shake_timer -= delta_time
+    if flash_timer > 0:
+        flash_timer -= delta_time    
     for x in range(-cube_size // 2, cube_size // 2):
         for y in range(-cube_size // 2, cube_size // 2):
             for z in range(-cube_size // 2, cube_size // 2):
@@ -216,6 +223,7 @@ def draw_wireframe_horizon():
     glEnd()
 
 def destroy_one_cube_per_layer():
+    global screen_shake_timer, flash_timer  # Ensure these globals are declared if needed
     # Iterate through each layer
     for y in range(-cube_size // 2, cube_size // 2):
         layer_affected = False
@@ -230,6 +238,8 @@ def destroy_one_cube_per_layer():
                         cubes[random_x][y][random_z].destroy()  # Call destroy method
                         layer_affected = True
                     break
+        if layer_affected:
+            trigger_hit_effects()  # Trigger effects when a cube is destroyed
 
 def gradient_color(y):
     # Assuming the vertical range is from -cube_size/2 to cube_size/2
@@ -263,8 +273,12 @@ def draw_scene():
                 cube = cubes[x][y][z]
                 glPushMatrix()
                 glTranslatef(cube.x * step, cube.y * step, cube.z * step)
-                gradient_color_value = gradient_color(cube.y)
-                glColor3fv(gradient_color_value)
+                if cube.is_destroyed:
+                    # Render the cube with a different style if it's destroyed
+                    glColor4f(1.0, 1.0, 1.0, 0.5)  # Example: white and semi-transparent
+                else:
+                    gradient_color_value = gradient_color(cube.y)
+                    glColor3fv(gradient_color_value)
                 glBindVertexArray(vao)
                 glDrawArrays(GL_QUADS, 0, 24)
                 glBindVertexArray(0)
@@ -350,6 +364,65 @@ def flash_screen(duration=1000, steps=255):
     # Reset clear color to game's background color
     glClearColor(0, 0, 0, 1)  # Assuming black is the game's background color
 
+# Additional global variables for effects
+screen_shake_duration = 0.5  # Duration of the shake in seconds
+screen_shake_timer = 0  # Current shake timer
+flash_duration = 0.3  # Duration of the flash in seconds
+flash_timer = 0  # Current flash timer
+
+def trigger_hit_effects():
+    global screen_shake_timer, flash_timer
+    screen_shake_timer = screen_shake_duration
+    flash_timer = flash_duration
+
+def update_effects(delta_time):
+    global screen_shake_timer, flash_timer
+    if screen_shake_timer > 0:
+        screen_shake_timer -= delta_time
+    if flash_timer > 0:
+        flash_timer -= delta_time
+
+def apply_screen_shake():
+    if screen_shake_timer > 0:
+        shake_intensity = 0.5  # Adjust as needed
+        random_offset_x = random.uniform(-shake_intensity, shake_intensity)
+        random_offset_y = random.uniform(-shake_intensity, shake_intensity)
+        glTranslatef(random_offset_x, random_offset_y, 0)
+
+def render_flash_effect():
+    if flash_timer > 0:
+        # Enable blending for transparency
+        glEnable(GL_BLEND)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
+        # Set orthographic projection to cover the whole screen
+        glMatrixMode(GL_PROJECTION)
+        glPushMatrix()
+        glLoadIdentity()
+        gluOrtho2D(-1, 1, -1, 1)
+
+        glMatrixMode(GL_MODELVIEW)
+        glPushMatrix()
+        glLoadIdentity()
+
+        # Set the color to red with the alpha based on flash_timer
+        glColor4f(1.0, 0.0, 0.0, min(flash_timer / flash_duration, 1.0))
+
+        # Draw a full-screen quad for the red flash effect
+        glBegin(GL_QUADS)
+        glVertex2f(-1, -1)
+        glVertex2f(1, -1)
+        glVertex2f(1, 1)
+        glVertex2f(-1, 1)
+        glEnd()
+
+        # Restore matrices and disable blending
+        glPopMatrix()
+        glMatrixMode(GL_PROJECTION)
+        glPopMatrix()
+        glMatrixMode(GL_MODELVIEW)
+        glDisable(GL_BLEND)
+
 # Main game loop
 while True:
     for event in pygame.event.get():
@@ -385,6 +458,9 @@ while True:
     # Calculate delta time
     delta_time = pygame.time.get_ticks() / 1000.0
 
+    # Update effects
+    update_effects(delta_time)
+
     # Check for collisions and destroy one cube per layer
     destruction_cooldown -= delta_time
     if destruction_cooldown <= 0:
@@ -400,7 +476,22 @@ while True:
         reset_cubes(cubes)  # Reset the cubes to start over
         continue  # Skip the rest of the loop to start with a fresh screen
 
+    # Clear the screen
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+    # Apply screen shake
+    glPushMatrix()  # Save the current state of transformations
+    if screen_shake_timer > 0:
+        apply_screen_shake()
+
     draw_scene()
+
+    # Restore the original state after shake
+    glPopMatrix()
+
+    # Render the flash effect over the scene if needed
+    if flash_timer > 0:
+        render_flash_effect()
 
     # Update sway angles
     angle_x += rotation_speed
