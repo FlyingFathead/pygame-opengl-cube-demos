@@ -1,0 +1,72 @@
+import pygame
+from pygame.locals import DOUBLEBUF, OPENGL
+from OpenGL.GL import *
+from OpenGL.GLUT import *
+from OpenGL.GLU import *
+
+# Define the dimensions of the Rubik's Cube
+cube_size = 10  # Number of small cubes per side
+
+# Calculate the step size for positioning small cubes
+step = 2.0 / cube_size
+
+# Initialize Pygame and create a window
+pygame.init()
+display = (800, 600)
+pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
+
+# Set perspective
+gluPerspective(45, (display[0] / display[1]), 0.1, 50.0)
+glTranslatef(0.0, 0.0, -20.0)  # Move the view farther back
+
+# Rotation angles
+angle_x, angle_y, angle_z = 0.0, 0.0, 0.0
+rotation_speed = 1.0  # Adjust rotation speed as needed
+
+# Main loop
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            quit()
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+    glPushMatrix()
+
+    # Rotate the entire Rubik's Cube
+    glRotatef(angle_x, 1, 0, 0)
+    glRotatef(angle_y, 0, 1, 0)
+    glRotatef(angle_z, 0, 0, 1)
+
+    # Draw the Rubik's Cube by creating small cubes
+    for x in range(-cube_size // 2, cube_size // 2):
+        for y in range(-cube_size // 2, cube_size // 2):
+            for z in range(-cube_size // 2, cube_size // 2):
+                # Translate to the position of the small cube
+                glPushMatrix()
+                glTranslatef(x * step, y * step, z * step)
+
+                # Draw the small cube (you can customize its appearance)
+                glBegin(GL_QUADS)
+                glVertex3f(-0.5, -0.5, -0.5)
+                glVertex3f(0.5, -0.5, -0.5)
+                glVertex3f(0.5, 0.5, -0.5)
+                glVertex3f(-0.5, 0.5, -0.5)
+
+                # Add more vertices for the other faces of the small cube
+                # ...
+
+                glEnd()
+
+                glPopMatrix()
+
+    glPopMatrix()
+
+    # Increment the rotation angles
+    angle_x += rotation_speed
+    angle_y += rotation_speed
+    angle_z += rotation_speed
+
+    pygame.display.flip()
+    pygame.time.wait(10)
