@@ -2,7 +2,7 @@
 
 # OpenGL 3D cube-in-cube and other graphics demos
 a.k.a. "Cube Libre" 
-- various digital cube & polygon tests for `pygame` w/ `opengl`
+- various nested cube tests for `pygame` w/ `opengl`
 - each demo comes with a different approach to multi-cube drawing
 - by FlyingFathead (with a little help from imaginary digital friends) // dec 2023
 - https://github.com/FlyingFathead/pygame-opengl-polygon-demos
