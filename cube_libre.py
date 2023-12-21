@@ -1,9 +1,11 @@
-# "Cube Libre" v0.07
+# "Cube Libre" v0.09
 #
 # By FlyingFathead (w/ a little help from imaginary digital friends) // Dec 2023
 # https://github.com/FlyingFathead/pygame-opengl-polygon-demos
 #
 # changelog:
+# v0.09 - cube animation reset cycle
+# v0.08 - reverted to this
 # v0.07 - flash and reset when all cubes are gone
 # v0.06 - reset on complete cube loss
 # v0.05 - wild horizons
@@ -131,6 +133,13 @@ class Cube:
         self.angular_velocity = random.uniform(-3, 3) # Degrees per second
         self.is_destroyed = True
         self.time_since_destroyed = 0  # Reset timer on destruction        
+
+    # Reset the cube's animation state
+    def reset_animation_state(self):
+        self.color = self.random_color()
+        self.is_destroyed = False
+        self.velocity = [0.0, 0.0, 0.0]
+        self.angular_velocity = 0.0
 
 # Initialize cubes
 cube_size = 5  # Adjust as necessary
@@ -311,6 +320,7 @@ def reset_cubes(cubes):
         for y in range(-cube_size // 2, cube_size // 2):
             for z in range(-cube_size // 2, cube_size // 2):
                 cubes[x][y][z] = Cube(x, y, z)  # Recreate the cube
+                cube.reset_animation_state()  # Reset animation state
 
 # flash the screen
 def flash_screen(duration=1000, steps=255):
@@ -399,101 +409,3 @@ while True:
 
     pygame.display.flip()
     pygame.time.wait(10)
-
-
-# old
-""" # Main game loop
-while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            quit()
-
-    # Get the state of all keyboard keys
-    keys = pygame.key.get_pressed()
-
-    # Handle keyboard events for movement
-    # Movement should be continuous and smooth
-    if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-        for row in cubes:
-            for layer in row:
-                for cube in layer:
-                    cube.x -= move_speed
-    if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-        for row in cubes:
-            for layer in row:
-                for cube in layer:
-                    cube.x += move_speed
-    if keys[pygame.K_UP] or keys[pygame.K_w]:
-        for row in cubes:
-            for layer in row:
-                for cube in layer:
-                    cube.y += move_speed
-    if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-        for row in cubes:
-            for layer in row:
-                for cube in layer:
-                    cube.y -= move_speed
-
-    # Check for collisions and destroy one cube per layer
-    # destroy_one_cube_per_layer()
-
-    # Update destruction cooldown
-    # Calculate delta time (time since last frame)
-    delta_time = pygame.time.get_ticks() / 1000.0
-
-    # Update destruction cooldown
-    destruction_cooldown -= delta_time
-    if destruction_cooldown <= 0:
-        destroy_one_cube_per_layer()
-        destruction_cooldown = 1.0 / max_destruction_rate
-
-    # Update cube positions and flash status
-    update_cubes(delta_time)
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-    glPushMatrix()
-
-    # Inside your main game loop, before drawing the cubes:
-    draw_wireframe_horizon()
-
-    # Rotate the entire cube
-    glRotatef(angle_x, 1, 0, 0)
-    glRotatef(angle_y, 0, 1, 0)
-    glRotatef(angle_z, 0, 0, 1)
-
-    for x in range(-cube_size // 2, cube_size // 2):
-        for y in range(-cube_size // 2, cube_size // 2):
-            for z in range(-cube_size // 2, cube_size // 2):
-                cube = cubes[x][y][z]
-                if cube and not cube.is_destroyed:
-                    # Draw cube
-                    glPushMatrix()
-                    glTranslatef(cube.x * step, cube.y * step, cube.z * step)
-                    glColor3fv(cube.color)  # Use the cube's assigned color
-
-                    # Draw the cube using the VAO and VBO
-                    glBindVertexArray(vao)
-                    glDrawArrays(GL_QUADS, 0, 24)  # Assuming 24 vertices for a cube
-                    glBindVertexArray(0)
-
-                    glPopMatrix()
-
-    glPopMatrix()
-
-    angle_x += rotation_speed
-    angle_y += rotation_speed
-    angle_z += rotation_speed
-
-    pygame.display.flip()
-    pygame.time.wait(10)
- """
-# old stuff ...
-""" # Check for collisions
-    for x in range(-cube_size // 2, cube_size // 2):
-        for y in range(-cube_size // 2, cube_size // 2):
-            for z in range(-cube_size // 2, cube_size // 2):
-                cube = cubes[x][y][z]
-                if cube and not cube.is_destroyed:
-                    if check_collision_with_horizon(cube):
-                        cube.is_destroyed = True  # Mark the cube as destroyed """
