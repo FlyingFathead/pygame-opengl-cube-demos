@@ -1,9 +1,10 @@
-# "Cube Libre" v0.10
+# "Cube Libre" v0.11
 #
 # By FlyingFathead (w/ a little help from imaginary digital friends) // Dec 2023
 # https://github.com/FlyingFathead/pygame-opengl-polygon-demos
 #
 # changelog:
+# v0.11 - added stars
 # v0.10 - proximity gradient + shake effect on collision
 # v0.09 - cube animation reset cycle
 # v0.08 - reverted to this
@@ -155,8 +156,21 @@ move_speed = 0.1
 horizon_y = -5
 
 # Initialize a destruction timer
-destruction_cooldown = 1.0
+destruction_cooldown = 0.0
 max_destruction_rate = 0.5  # 1.0 = One cube per second
+
+# Define the number of stars
+num_stars = 1000
+
+# Generate random positions for stars
+stars = [(random.uniform(-50, 50), random.uniform(-50, 50), random.uniform(-50, 50)) for _ in range(num_stars)]
+
+def draw_stars():
+    glPointSize(2)  # Adjust point size for visibility
+    glBegin(GL_POINTS)
+    for star in stars:
+        glVertex3fv(star)
+    glEnd()
 
 # Movement function updated for x and y directions
 def move_cubes(delta_x, delta_y):
@@ -253,6 +267,10 @@ def gradient_color(y):
     ]
     return color
 
+def update_star_positions(offset_x, offset_y, offset_z):
+    global stars
+    stars = [(x + offset_x, y + offset_y, z + offset_z) for (x, y, z) in stars]
+
 def draw_scene():
     # Rendering
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
@@ -265,6 +283,10 @@ def draw_scene():
 
     # Draw wireframe horizon
     draw_wireframe_horizon()
+
+    # Draw stars
+    glColor3f(1, 1, 1)  # White stars
+    draw_stars()
 
     # Apply gradient in the cube rendering loop
     for x in range(-cube_size // 2, cube_size // 2):
