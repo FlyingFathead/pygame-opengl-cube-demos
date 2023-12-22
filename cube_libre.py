@@ -1,9 +1,10 @@
-# "Cube Libre" v0.11
+# "Cube Libre" v0.12
 #
 # By FlyingFathead (w/ a little help from imaginary digital friends) // Dec 2023
 # https://github.com/FlyingFathead/pygame-opengl-polygon-demos
 #
 # changelog:
+# v0.12 - added numpy as an optimization option on vertices (not implemented yet; needs metrics)
 # v0.11 - added stars
 # v0.10 - proximity gradient + shake effect on collision
 # v0.09 - cube animation reset cycle
@@ -16,10 +17,13 @@
 # v0.02 - solid color
 
 import pygame
+
 from pygame.locals import DOUBLEBUF, OPENGL
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
+
+# import numpy as np # should you need numpy
 import random
 
 # Define the dimensions of the main cube
@@ -40,6 +44,15 @@ glEnable(GL_DEPTH_TEST)
 # Set perspective
 gluPerspective(45, (display[0] / display[1]), 0.1, 50.0)
 glTranslatef(0.0, 0.0, -20.0)  # Move the view farther back
+
+""" # Using numpy to define vertices
+vertices = np.array([-0.5, -0.5,  0.5,  0.5, -0.5,  0.5,  0.5,  0.5,  0.5, -0.5,  0.5,
+        0.5,  0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,  0.5, -0.5,  0.5,
+        0.5, -0.5, -0.5,  0.5,  0.5,  0.5,  0.5,  0.5,  0.5,  0.5, -0.5,
+       -0.5,  0.5, -0.5, -0.5, -0.5,  0.5,  0.5, -0.5,  0.5,  0.5, -0.5,
+       -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,  0.5, -0.5,  0.5,  0.5, -0.5,
+        0.5, -0.5, -0.5, -0.5, -0.5,  0.5, -0.5,  0.5,  0.5,  0.5,  0.5,
+        0.5,  0.5, -0.5,  0.5, -0.5, -0.5], dtype=np.float32) """
 
 # Define the vertices for a cube
 vertices = [
@@ -84,6 +97,7 @@ vertices = [
 vbo = glGenBuffers(1)
 glBindBuffer(GL_ARRAY_BUFFER, vbo)
 glBufferData(GL_ARRAY_BUFFER, len(vertices) * 4, (GLfloat * len(vertices))(*vertices), GL_STATIC_DRAW)
+# glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices, GL_STATIC_DRAW) # if using numpy
 
 # Create a VAO to store the vertex attribute configuration
 vao = glGenVertexArrays(1)
