@@ -21,6 +21,8 @@ You can then execute i.e. `cube_libre.py` to start the demo. In `cube_libre.py` 
 
 ## Changelog
 `cube_libre.py`
+- v0.12 - added numpy as an optimization option on vertices (not implemented yet; needs metrics)
+- v0.11 - added stars
 - v0.10 - proximity gradient + shake effect on collision
 - v0.09 - reset cycle for cube animation
 - v0.08 - Reverted to this
