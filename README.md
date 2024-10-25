@@ -35,7 +35,7 @@ Cube Libre is a Pygame and OpenGL demonstration project that explores the world 
 The two abovementioned steps should be enough for most systems, if this doesn't work, figure out an environment where you can run:
 
     ```bash
-    `pip install -r requirements.txt`
+    pip install -r requirements.txt
     ```
 
 You can then execute the program with i.e. `python3 cube_libre.py` to start the demo. 
