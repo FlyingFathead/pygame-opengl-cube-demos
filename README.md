@@ -13,14 +13,37 @@ Cube Libre is a Pygame and OpenGL demonstration project that explores the world 
 
 ## How to Run
 
-To run "Cube Libre," make sure you have Python, `pygame` and `PyOpenGL` installed on your system. 
+**(Debian/Ubuntu tree Linux)**
 
-If not, run: `pip install -r requirements.txt`
+1. Make sure you have Python `venv` package installed.
 
-You can then execute i.e. `cube_libre.py` to start the demo. In `cube_libre.py` (which is the main demo at the moment), you can control the cube with either W,A,S,D keys or arrows. Colliding with the grid causes the cube to take damage (1 lost cube per impact within given tick timer limit), when all cubes are lost, the scene will reset.
+Install it with i.e.:
+
+    ```bash
+    sudo apt-get install python3-venv
+    ```
+
+2. Just run the `run.sh` script with i.e.
+
+    ```bash
+    ./run.sh
+    ```
+
+The two abovementioned steps should be enough for most systems, if this doesn't work, figure out an environment where you can run:
+
+    ```bash
+    `pip install -r requirements.txt`
+    ```
+
+You can then execute the program with i.e. `python3 cube_libre.py` to start the demo. 
+
+In `cube_libre.py` (which is the main demo at the moment), you can control the cube with either W,A,S,D keys or arrows. Colliding with the grid causes the cube to take damage (1 lost cube per impact within given tick timer limit), when all cubes are lost, the scene will reset. 
+
+Currently, "Cube Libre" is merely an early proof-of-concept of a cubistic 3D platformer-strategy-puzzle game.
 
 ## Changelog
 `cube_libre.py`
+- v0.12.1 - added `run.sh`
 - v0.12 - added numpy as an optimization option on vertices (not implemented yet; needs metrics)
 - v0.11 - added stars
 - v0.10 - proximity gradient + shake effect on collision
