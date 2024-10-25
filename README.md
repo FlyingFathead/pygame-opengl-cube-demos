@@ -15,15 +15,19 @@ Cube Libre is a Pygame and OpenGL demonstration project that explores the world 
 
 **(Debian/Ubuntu tree Linux)**
 
-1. Make sure you have Python `venv` package installed.
-
-Install it with i.e.:
+1. Make sure you have the Python `venv` package installed that's required for handling Python's virtual environments. If you don't have it, install it with i.e.:
 
     ```bash
     sudo apt-get install python3-venv
     ```
 
-2. Just run the `run.sh` script with i.e.
+2. Make sure you have OpenGL libraries installed. Install them with i.e.:
+
+    ```bash
+    sudo apt install mesa-utils freeglut3-dev
+    ```
+
+2. Then, just run the `run.sh` script with i.e.:
 
     ```bash
     ./run.sh
