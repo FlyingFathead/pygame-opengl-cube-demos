@@ -4,6 +4,7 @@
 # https://github.com/FlyingFathead/pygame-opengl-polygon-demos
 #
 # changelog:
+# v0.12.2 - added OpenGL compataibility checks
 # v0.12 - added numpy as an optimization option on vertices (not implemented yet; needs metrics)
 # v0.11 - added stars
 # v0.10 - proximity gradient + shake effect on collision
@@ -36,7 +37,42 @@ step = cube_spacing
 # Initialize Pygame and create a window
 pygame.init()
 display = (800, 600)
+
+# # Request an OpenGL 3.3 core profile context
+# pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MAJOR_VERSION, 3)
+# pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MINOR_VERSION, 3)
+# pygame.display.gl_set_attribute(pygame.GL_CONTEXT_PROFILE_MASK, pygame.GL_CONTEXT_PROFILE_CORE)
+
+# Using numerical value for compatibility profile
+pygame.display.gl_set_attribute(pygame.GL_CONTEXT_PROFILE_MASK, 0x00002)
+
+# Request OpenGL 3.3 compatibility profile
+pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MAJOR_VERSION, 3)
+pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MINOR_VERSION, 3)
+pygame.display.gl_set_attribute(pygame.GL_CONTEXT_PROFILE_MASK, pygame.GL_CONTEXT_PROFILE_COMPATIBILITY)
+
 pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
+
+try:
+    pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
+except pygame.error as e:
+    print(f"Pygame failed to set display mode with OpenGL: {e}")
+    pygame.quit()
+    quit()
+
+# Verify OpenGL version
+version = glGetString(GL_VERSION)
+if version:
+    print(f"OpenGL version: {version.decode()}")
+    major, minor = map(int, version.decode().split('.')[0:2])
+    if major < 3:
+        print("OpenGL version is below 3.0. VAOs and VBOs may not be supported.")
+        pygame.quit()
+        quit()
+else:
+    print("Failed to retrieve OpenGL version.")
+    pygame.quit()
+    quit()
 
 # Enable depth testing
 glEnable(GL_DEPTH_TEST)

@@ -47,6 +47,7 @@ Currently, "Cube Libre" is merely an early proof-of-concept of a cubistic 3D pla
 
 ## Changelog
 `cube_libre.py`
+- v0.12.2 - added OpenGL compatibility checks on startup
 - v0.12.1 - added `run.sh`
 - v0.12 - added numpy as an optimization option on vertices (not implemented yet; needs metrics)
 - v0.11 - added stars
