@@ -121,6 +121,15 @@ fi
 
 # Run the main script
 if [ -f "$MAIN_SCRIPT" ]; then
+
+    # Detect if running under Wayland
+    if [ -n "$WAYLAND_DISPLAY" ]; then
+        echo "[INFO] Wayland detected. Setting SDL_VIDEO_X11_FORCE_EGL=1 to force X11 with EGL."
+        export SDL_VIDEO_X11_FORCE_EGL=1
+    else
+        echo "[INFO] Wayland not detected. Proceeding with default settings."
+    fi
+
     echo_info "Running $MAIN_SCRIPT..."
     python "$MAIN_SCRIPT"
     EXIT_CODE=$?

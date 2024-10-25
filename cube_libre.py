@@ -19,6 +19,7 @@ version_number = "0.12.4"
 # v0.03 - horizon, navigation
 # v0.02 - solid color
 
+import os
 import pygame
 
 from pygame.locals import DOUBLEBUF, OPENGL
@@ -28,6 +29,18 @@ from OpenGL.GLU import *
 
 # import numpy as np # should you need numpy
 import random
+
+# Detect if running under Wayland
+is_wayland = 'WAYLAND_DISPLAY' in os.environ
+
+# Set environment variables based on the detected windowing system
+if is_wayland:
+    # Attempt to use native Wayland support if available
+    print("[INFO] Detected Wayland. Attempting to use native Wayland support.")
+    # Potentially set other SDL environment variables here if needed
+else:
+    # Default to X11
+    print("[INFO] Using X11 as the windowing system.")
 
 # Define the dimensions of the main cube
 cube_size = 10  # Number of small cubes per side
