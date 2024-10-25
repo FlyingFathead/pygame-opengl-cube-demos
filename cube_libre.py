@@ -3,7 +3,7 @@
 # By FlyingFathead (w/ a little help from imaginary digital friends) // Dec 2023
 # https://github.com/FlyingFathead/pygame-opengl-polygon-demos
 
-version_number = "0.12.4"
+version_number = "0.12.5"
 
 # changelog:
 # v0.12.2 - added OpenGL compataibility checks

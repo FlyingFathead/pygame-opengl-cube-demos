@@ -44,6 +44,7 @@ Currently, "Cube Libre" is merely an early proof-of-concept of a cubistic 3D pla
 
 ## Changelog
 `cube_libre.py`
+- v0.12.5 - fixed cube size definition extra
 - v0.12.4 - more try/except blocks on startup for error catching
 - v0.12.3 - fixes to OpenGL checkup on startup
 - v0.12.2 - added OpenGL compatibility checks on startup
