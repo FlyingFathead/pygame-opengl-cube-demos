@@ -3,7 +3,7 @@
 # By FlyingFathead (w/ a little help from imaginary digital friends) // Dec 2023
 # https://github.com/FlyingFathead/pygame-opengl-polygon-demos
 
-version_number = "0.12.3"
+version_number = "0.12.4"
 
 # changelog:
 # v0.12.2 - added OpenGL compataibility checks
@@ -94,9 +94,14 @@ else:
 # Enable depth testing
 glEnable(GL_DEPTH_TEST)
 
-# Set perspective
-gluPerspective(45, (display[0] / display[1]), 0.1, 50.0)
-glTranslatef(0.0, 0.0, -20.0)  # Move the view farther back
+# Set perspective and translate
+try:
+    gluPerspective(45, (display[0] / display[1]), 0.1, 50.0)
+    glTranslatef(0.0, 0.0, -20.0)  # Move the view farther back
+except OpenGL.error.GLError as e:
+    print(f"OpenGL Error during gluPerspective or glTranslatef: {e}")
+    pygame.quit()
+    quit()
 
 """ # Using numpy to define vertices
 vertices = np.array([-0.5, -0.5,  0.5,  0.5, -0.5,  0.5,  0.5,  0.5,  0.5, -0.5,  0.5,
@@ -147,22 +152,33 @@ vertices = [
 ]
 
 # Create a VBO to store the vertex data
-vbo = glGenBuffers(1)
-glBindBuffer(GL_ARRAY_BUFFER, vbo)
-glBufferData(GL_ARRAY_BUFFER, len(vertices) * 4, (GLfloat * len(vertices))(*vertices), GL_STATIC_DRAW)
+try:
+    vbo = glGenBuffers(1)
+    glBindBuffer(GL_ARRAY_BUFFER, vbo)
+    glBufferData(GL_ARRAY_BUFFER, len(vertices) * 4, (GLfloat * len(vertices))(*vertices), GL_STATIC_DRAW)
+except OpenGL.error.GLError as e:
+    print(f"OpenGL Error during VBO setup: {e}")
+    pygame.quit()
+    quit()
+
 # glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices, GL_STATIC_DRAW) # if using numpy
 
 # Create a VAO to store the vertex attribute configuration
-vao = glGenVertexArrays(1)
-glBindVertexArray(vao)
+try:
+    vao = glGenVertexArrays(1)
+    glBindVertexArray(vao)
 
-# Specify vertex attribute pointers
-glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, None)
-glEnableVertexAttribArray(0)
+    # Specify vertex attribute pointers
+    glEnableVertexAttribArray(0)
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, None)
 
-# Unbind the VAO and VBO
-glBindVertexArray(0)
-glBindBuffer(GL_ARRAY_BUFFER, 0)
+    # Unbind the VAO and VBO
+    glBindVertexArray(0)
+    glBindBuffer(GL_ARRAY_BUFFER, 0)
+except OpenGL.error.GLError as e:
+    print(f"OpenGL Error during VAO/VBO setup: {e}")
+    pygame.quit()
+    quit()
 
 # Initialize rotation angles
 angle_x, angle_y, angle_z = 0.0, 0.0, 0.0
