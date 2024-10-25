@@ -4,8 +4,7 @@
 a.k.a. "Cube Libre" 
 - various nested cube tests for `pygame` w/ `opengl`
 - each demo comes with a different approach to multi-cube drawing
-- by FlyingFathead (with a little help from imaginary digital friends) // dec 2023
-- https://github.com/FlyingFathead/pygame-opengl-polygon-demos
+- repo: https://github.com/FlyingFathead/pygame-opengl-cube-demos/
 
 ## Description
 
@@ -62,3 +61,7 @@ Currently, "Cube Libre" is merely an early proof-of-concept of a cubistic 3D pla
 - v0.04 - More cubes
 - v0.03 - Horizon and navigation
 - v0.02 - Solid color
+
+## About
+- By FlyingFathead (with a little help from imaginary digital friends)
+- Dec 2023 // Updated Oct 2024
