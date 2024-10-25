@@ -1,9 +1,11 @@
+
+
 # "Cube Libre" v0.12
 #
 # By FlyingFathead (w/ a little help from imaginary digital friends) // Dec 2023
 # https://github.com/FlyingFathead/pygame-opengl-polygon-demos
 
-version_number = "0.12.5"
+version_number = "0.12.6"
 
 # changelog:
 # v0.12.2 - added OpenGL compataibility checks
@@ -48,6 +50,10 @@ cube_spacing = 1.0  # Increased spacing to avoid overlap
 
 # Calculate the step size for positioning small cubes
 step = cube_spacing
+
+# Movement speed
+move_speed = 0.1
+z_move_speed = 0.1  # Define Z-axis movement speed
 
 # Initialize Pygame and create a window
 pygame.init()
@@ -571,6 +577,21 @@ while True:
             for layer in row:
                 for cube in layer:
                     cube.y -= move_speed
+
+    # *** Begin Z-Axis Movement Addition ***
+    # Handle Z-axis movement only when Shift is pressed
+    if keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]:
+        if keys[pygame.K_q]:
+            for row in cubes:
+                for layer in row:
+                    for cube in layer:
+                        cube.z += z_move_speed  # Move forward along Z-axis
+        if keys[pygame.K_e]:
+            for row in cubes:
+                for layer in row:
+                    for cube in layer:
+                        cube.z -= z_move_speed  # Move backward along Z-axis
+    # *** End Z-Axis Movement Addition ***
 
     # Calculate delta time
     delta_time = pygame.time.get_ticks() / 1000.0
