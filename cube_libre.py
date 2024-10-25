@@ -2,7 +2,9 @@
 #
 # By FlyingFathead (w/ a little help from imaginary digital friends) // Dec 2023
 # https://github.com/FlyingFathead/pygame-opengl-polygon-demos
-#
+
+version_number = "0.12.3"
+
 # changelog:
 # v0.12.2 - added OpenGL compataibility checks
 # v0.12 - added numpy as an optimization option on vertices (not implemented yet; needs metrics)
@@ -51,7 +53,7 @@ pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MAJOR_VERSION, 3)
 pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MINOR_VERSION, 3)
 pygame.display.gl_set_attribute(pygame.GL_CONTEXT_PROFILE_MASK, pygame.GL_CONTEXT_PROFILE_COMPATIBILITY)
 
-pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
+# pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
 
 try:
     pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
@@ -60,11 +62,26 @@ except pygame.error as e:
     pygame.quit()
     quit()
 
+# Set the window title with version number
+pygame.display.set_caption(f"Cube Libre (demo, v.{version_number})")
+
 # Verify OpenGL version
 version = glGetString(GL_VERSION)
 if version:
-    print(f"OpenGL version: {version.decode()}")
-    major, minor = map(int, version.decode().split('.')[0:2])
+    version_string = version.decode()
+    print(f"OpenGL version: {version_string}")
+    
+    # Extract major and minor version numbers
+    version_parts = version_string.split(' ')[0]
+    major_minor = version_parts.split('.')[:2]
+    
+    try:
+        major, minor = map(int, major_minor)
+    except ValueError:
+        print(f"Unexpected OpenGL version format: {version_string}")
+        pygame.quit()
+        quit()
+    
     if major < 3:
         print("OpenGL version is below 3.0. VAOs and VBOs may not be supported.")
         pygame.quit()
