@@ -26,11 +26,12 @@ detect_python_exec() {
     esac
 }
 
-# You can i.e. manually set the executable to 'python3' or 'python' based on your environment.
-# For Windows with Git Bash, you might need to change it to 'python' instead of 'python3'.
 # Set PYTHON_EXEC based on the detected OS
-# PYTHON_EXEC="python3"
 PYTHON_EXEC=$(detect_python_exec)
+
+# Define pip executable using the Python executable
+# This ensures pip is invoked through the correct Python interpreter
+PIP_EXEC="$PYTHON_EXEC -m pip"
 
 # Define other variables
 VENV_DIR="venv"
@@ -67,7 +68,6 @@ version_ge() {
 # Setup Python Executable
 # =======================
 
-# Check if the defined Python executable exists
 echo_info "Detected Python executable: $PYTHON_EXEC"
 
 # Check if the defined Python executable exists
@@ -92,9 +92,6 @@ fi
 # Setup pip
 # =========
 
-# Define pip executable using the Python executable
-PIP_EXEC="$PYTHON_EXEC -m pip"
-
 # Check if pip is installed
 if ! $PIP_EXEC --version &> /dev/null; then
     echo_info "pip not found. Attempting to install pip..."
@@ -113,15 +110,17 @@ echo_info "pip is installed."
 # Setup virtualenv
 # ================
 
-# Check if virtualenv is installed
+# Check if virtualenv is installed within the environment
 if ! $PIP_EXEC show virtualenv &> /dev/null; then
-    echo_info "virtualenv not found. Installing virtualenv..."
-    $PIP_EXEC install --user virtualenv
+    echo_info "virtualenv not found. Installing virtualenv within the virtual environment..."
+    
+    # Install virtualenv without --user to ensure it's installed in the virtual environment
+    $PIP_EXEC install virtualenv
     if ! $PIP_EXEC show virtualenv &> /dev/null; then
         echo_error "virtualenv installation failed. Please install virtualenv manually."
         exit 1
     fi
-    echo_info "virtualenv installed successfully."
+    echo_info "virtualenv installed successfully within the virtual environment."
 fi
 
 # ==========================
@@ -181,7 +180,7 @@ echo_info "Virtual environment activated."
 # ==========================================
 
 echo_info "Upgrading pip..."
-pip install --upgrade pip
+$PYTHON_EXEC -m pip install --upgrade pip
 if [ $? -ne 0 ]; then
     echo_error "Failed to upgrade pip."
     deactivate
@@ -195,7 +194,7 @@ echo_info "pip upgraded successfully."
 
 if [ -f "$REQUIREMENTS_FILE" ]; then
     echo_info "Installing dependencies from $REQUIREMENTS_FILE..."
-    pip install -r "$REQUIREMENTS_FILE"
+    $PIP_EXEC install -r "$REQUIREMENTS_FILE"
     if [ $? -ne 0 ]; then
         echo_error "Failed to install dependencies."
         deactivate
