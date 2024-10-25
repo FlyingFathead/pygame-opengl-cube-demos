@@ -43,7 +43,7 @@ else:
     print("[INFO] Using X11 as the windowing system.")
 
 # Define the dimensions of the main cube
-cube_size = 10  # Number of small cubes per side
+cube_size = 5  # Number of small cubes per side
 cube_spacing = 1.0  # Increased spacing to avoid overlap
 
 # Calculate the step size for positioning small cubes
@@ -240,7 +240,6 @@ class Cube:
         self.angular_velocity = 0.0
 
 # Initialize cubes
-cube_size = 5  # Adjust as necessary
 cubes = [[[Cube(x, y, z) for z in range(-cube_size // 2, cube_size // 2)] 
           for y in range(-cube_size // 2, cube_size // 2)] 
          for x in range(-cube_size // 2, cube_size // 2)]
