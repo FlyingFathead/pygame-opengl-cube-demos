@@ -8,7 +8,7 @@
 # By FlyingFathead (w/ a little help from imaginary digital friends) // Dec 2023 - Dec 2024
 # https://github.com/FlyingFathead/pygame-opengl-polygon-demos
 
-version_number = "0.12.6"
+version_number = "0.12.61"
 
 import os
 import pygame
@@ -50,7 +50,9 @@ z_default_move_speed = 0.1
 pygame.init()
 display = (800, 600)
 
-portal_position = (0.0, 0.0, 20.0)  # Position of the portal (x, y, z)
+# portal_position = (0.0, 0.0, 20.0)  # Position of the portal (x, y, z)
+# portal_position = (18.0, 0.0, 18.0)
+portal_position = (18.0, 0.0, -18.0)
 portal_size = 5.0  # Width and height of the portal
 portal_color = (0.0, 1.0, 1.0)  # Cyan color for glowing effect
 portal_glow_steps = 10  # Number of overlapping quads for the glow effect
@@ -294,7 +296,8 @@ def draw_stars():
 # draw the portal
 def draw_portal():
     glPushMatrix()
-    glTranslatef(*portal_position)
+    # No glTranslatef here!    
+    # glTranslatef(*portal_position)
     
     # Enable blending for the glowing effect
     glEnable(GL_BLEND)
@@ -432,10 +435,22 @@ def draw_scene():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glPushMatrix()
 
+    # # Portal drawing, isolated:
+    # glPushMatrix()  # Portal push #B
+    # glTranslatef(*portal_position)
+    # draw_portal()
+    # glPopMatrix()   # Pop #B (portal done)    
+
     # Rotate the entire scene
     glRotatef(angle_x, 1, 0, 0)
     glRotatef(angle_y, 0, 1, 0)
     glRotatef(angle_z, 0, 0, 1)
+
+    # Draw the portal now
+    glPushMatrix()
+    glTranslatef(*portal_position)
+    draw_portal()
+    glPopMatrix()
 
     # Draw wireframe horizon
     draw_wireframe_horizon()
@@ -462,27 +477,27 @@ def draw_scene():
                 glBindVertexArray(0)
                 glPopMatrix()
 
-    """ # Draw cubes with rotation around their own center
-    for x in range(-cube_size // 2, cube_size // 2):
-        for y in range(-cube_size // 2, cube_size // 2):
-            for z in range(-cube_size // 2, cube_size // 2):
-                cube = cubes[x][y][z]
-                glPushMatrix()
-                # Translate to cube position
-                glTranslatef(cube.x * step, cube.y * step, cube.z * step)
+    # # Draw cubes with rotation around their own center
+    # for x in range(-cube_size // 2, cube_size // 2):
+    #     for y in range(-cube_size // 2, cube_size // 2):
+    #         for z in range(-cube_size // 2, cube_size // 2):
+    #             cube = cubes[x][y][z]
+    #             glPushMatrix()
+    #             # Translate to cube position
+    #             glTranslatef(cube.x * step, cube.y * step, cube.z * step)
                 
-                # Apply individual cube rotation
-                # Comment out or remove the lines below to stop individual cube rotation
-                # glRotatef(angle_x, 1, 0, 0)
-                # glRotatef(angle_y, 0, 1, 0)
-                # glRotatef(angle_z, 0, 0, 1)
+    #             # Apply individual cube rotation
+    #             # Comment out or remove the lines below to stop individual cube rotation
+    #             # glRotatef(angle_x, 1, 0, 0)
+    #             # glRotatef(angle_y, 0, 1, 0)
+    #             # glRotatef(angle_z, 0, 0, 1)
 
-                # Set cube color and draw
-                glColor3fv(cube.color)
-                glBindVertexArray(vao)
-                glDrawArrays(GL_QUADS, 0, 24)
-                glBindVertexArray(0)
-                glPopMatrix() """
+    #             # Set cube color and draw
+    #             glColor3fv(cube.color)
+    #             glBindVertexArray(vao)
+    #             glDrawArrays(GL_QUADS, 0, 24)
+    #             glBindVertexArray(0)
+    #             glPopMatrix()
 
     glPopMatrix()    
 
@@ -679,48 +694,6 @@ while True:
                     for cube in layer:
                         cube.x += default_move_speed * shift_multiplier
 
-    # # *** Begin Z-Axis Movement Addition ***
-    # # Handle Z-axis movement only when Shift is pressed
-    # if keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]:
-    #     if keys[pygame.K_q]:
-    #         for row in cubes:
-    #             for layer in row:
-    #                 for cube in layer:
-    #                     cube.z += z_default_move_speed  # Move forward along Z-axis
-    #     if keys[pygame.K_e]:
-    #         for row in cubes:
-    #             for layer in row:
-    #                 for cube in layer:
-    #                     cube.z -= z_default_move_speed  # Move backward along Z-axis
-    # # *** End Z-Axis Movement Addition ***
-
-    # # Q or E always move along the Z-axis
-    # if keys[pygame.K_q]:
-    #     for row in cubes:
-    #         for layer in row:
-    #             for cube in layer:
-    #                 cube.z += z_default_move_speed  # Move forward along Z-axis
-
-    # if keys[pygame.K_e]:
-    #     for row in cubes:
-    #         for layer in row:
-    #             for cube in layer:
-    #                 cube.z -= z_default_move_speed  # Move backward along Z-axis
-
-    # # When Shift is held, A or D or LEFT or RIGHT also move along the Z-axis
-    # if (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]):
-    #     if keys[pygame.K_a] or keys[pygame.K_LEFT]:
-    #         for row in cubes:
-    #             for layer in row:
-    #                 for cube in layer:
-    #                     cube.z += z_default_move_speed  # Move forward along Z-axis
-
-    #     if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
-    #         for row in cubes:
-    #             for layer in row:
-    #                 for cube in layer:
-    #                     cube.z -= z_default_move_speed  # Move backward along Z-axis
-
     # Calculate delta time
     delta_time = pygame.time.get_ticks() / 1000.0
 
@@ -755,7 +728,7 @@ while True:
     glPushMatrix()        # Save the current transformation state
     glLoadIdentity()      # Reset transformations
     glTranslatef(*portal_position)
-    draw_portal()
+    # draw_portal()
     glPopMatrix()         # Restore the original transformation state
 
     # Restore the original state after shake
