@@ -1,25 +1,14 @@
-
-
-# "Cube Libre" v0.12
+# "Cube Libre"
 #
-# By FlyingFathead (w/ a little help from imaginary digital friends) // Dec 2023
+# This is a "cubistic" puzzle/adventure game, where you are a cube consisting of smaller cubes.
+# The idea is that whenever you hit something, your main cube (that consists of smaller cubes) breaks a little.
+# Another core concept is that you must navigate through a laser maze to a portal with your cube, and keep as many cubes of your main cube intact while at it.
+# The idea is to finally transcend as a 1x1 single cube into the heavens and join the stars.
+#
+# By FlyingFathead (w/ a little help from imaginary digital friends) // Dec 2023 - Dec 2024
 # https://github.com/FlyingFathead/pygame-opengl-polygon-demos
 
 version_number = "0.12.6"
-
-# changelog:
-# v0.12.2 - added OpenGL compataibility checks
-# v0.12 - added numpy as an optimization option on vertices (not implemented yet; needs metrics)
-# v0.11 - added stars
-# v0.10 - proximity gradient + shake effect on collision
-# v0.09 - cube animation reset cycle
-# v0.08 - reverted to this
-# v0.07 - flash and reset when all cubes are gone
-# v0.06 - reset on complete cube loss
-# v0.05 - wild horizons
-# v0.04 - moar
-# v0.03 - horizon, navigation
-# v0.02 - solid color
 
 import os
 import pygame
@@ -47,17 +36,25 @@ else:
 # Define the dimensions of the main cube
 cube_size = 5  # Number of small cubes per side
 cube_spacing = 1.0  # Increased spacing to avoid overlap
+cube_break_velocity_factor = 1.0  # Adjust this to make cubes fly off faster or slower
 
 # Calculate the step size for positioning small cubes
 step = cube_spacing
 
 # Movement speed
-move_speed = 0.1
-z_move_speed = 0.1  # Define Z-axis movement speed
+default_move_speed = 0.1
+# Define Z-axis movement speed
+z_default_move_speed = 0.1
 
 # Initialize Pygame and create a window
 pygame.init()
 display = (800, 600)
+
+portal_position = (0.0, 0.0, 20.0)  # Position of the portal (x, y, z)
+portal_size = 5.0  # Width and height of the portal
+portal_color = (0.0, 1.0, 1.0)  # Cyan color for glowing effect
+portal_glow_steps = 10  # Number of overlapping quads for the glow effect
+portal_glow_alpha = 0.3  # Initial alpha for the glow
 
 # # Request an OpenGL 3.3 core profile context
 # pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MAJOR_VERSION, 3)
@@ -232,7 +229,17 @@ class Cube:
         # Set velocity for flying off
         # self.velocity = [random.uniform(-1, 1), random.uniform(1, 2), random.uniform(-1, 1)]        
         # Set lower velocity for flying off
-        self.velocity = [random.uniform(-0.5, 0.5), random.uniform(0.5, 1), random.uniform(-0.5, 0.5)]
+        
+        # old method
+        # self.velocity = [random.uniform(-0.5, 0.5), random.uniform(0.5, 1), random.uniform(-0.5, 0.5)]
+
+        # Use the velocity factor here
+        self.velocity = [
+            random.uniform(-0.5, 0.5) * cube_break_velocity_factor,
+            random.uniform(0.5, 1) * cube_break_velocity_factor,
+            random.uniform(-0.5, 0.5) * cube_break_velocity_factor
+        ]
+
         # Add angular velocity for swirling effect
         self.angular_velocity = random.uniform(-3, 3) # Degrees per second
         self.is_destroyed = True
@@ -245,13 +252,24 @@ class Cube:
         self.velocity = [0.0, 0.0, 0.0]
         self.angular_velocity = 0.0
 
-# Initialize cubes
-cubes = [[[Cube(x, y, z) for z in range(-cube_size // 2, cube_size // 2)] 
-          for y in range(-cube_size // 2, cube_size // 2)] 
+# start position variable
+start_position = (-18.0, 0.0, -18.0)  # For example, near the edge of the horizon grid
+
+# When initializing cubes, incorporate the start_position offset:
+cubes = [[[Cube(x + start_position[0], 
+                 y + start_position[1], 
+                 z + start_position[2]) 
+           for z in range(-cube_size // 2, cube_size // 2)]
+          for y in range(-cube_size // 2, cube_size // 2)]
          for x in range(-cube_size // 2, cube_size // 2)]
 
+# # Initialize cubes (no variables)
+# cubes = [[[Cube(x, y, z) for z in range(-cube_size // 2, cube_size // 2)] 
+#           for y in range(-cube_size // 2, cube_size // 2)] 
+#          for x in range(-cube_size // 2, cube_size // 2)]
+
 # Movement speed
-move_speed = 0.1
+default_move_speed = 0.1
 
 # Assuming the horizon is at a fixed Y-coordinate
 horizon_y = -5
@@ -272,6 +290,43 @@ def draw_stars():
     for star in stars:
         glVertex3fv(star)
     glEnd()
+
+# draw the portal
+def draw_portal():
+    glPushMatrix()
+    glTranslatef(*portal_position)
+    
+    # Enable blending for the glowing effect
+    glEnable(GL_BLEND)
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+    
+    # Draw the main portal quad
+    glColor4f(*portal_color, 1.0)  # Full opacity for the main portal
+    glBegin(GL_QUADS)
+    half_size = portal_size / 2
+    glVertex3f(-half_size, -half_size, 0.0)
+    glVertex3f(half_size, -half_size, 0.0)
+    glVertex3f(half_size, half_size, 0.0)
+    glVertex3f(-half_size, half_size, 0.0)
+    glEnd()
+    
+    # Create a glowing effect by drawing larger, semi-transparent quads
+    for i in range(1, portal_glow_steps + 1):
+        scale = 1.0 + (i * 0.2)  # Increase size for each glow layer
+        alpha = portal_glow_alpha / i  # Decrease alpha for each layer
+        glColor4f(*portal_color, alpha)
+        glPushMatrix()
+        glScalef(scale, scale, scale)
+        glBegin(GL_QUADS)
+        glVertex3f(-half_size, -half_size, 0.0)
+        glVertex3f(half_size, -half_size, 0.0)
+        glVertex3f(half_size, half_size, 0.0)
+        glVertex3f(-half_size, half_size, 0.0)
+        glEnd()
+        glPopMatrix()
+    
+    glDisable(GL_BLEND)
+    glPopMatrix()
 
 # Movement function updated for x and y directions
 def move_cubes(delta_x, delta_y):
@@ -431,33 +486,43 @@ def draw_scene():
 
     glPopMatrix()    
 
-def move_cubes(direction, move_speed):
+def move_cubes(direction, default_move_speed):
     # Choose a single cube to move based on direction
     # For simplicity, let's always move the cube at the center
     center_index = cube_size // 2
     cube_to_move = cubes[center_index][center_index][center_index]
 
     if direction == "LEFT":
-        cube_to_move.x -= move_speed
+        cube_to_move.x -= default_move_speed
     elif direction == "RIGHT":
-        cube_to_move.x += move_speed
+        cube_to_move.x += default_move_speed
     elif direction == "UP":
-        cube_to_move.y += move_speed
+        cube_to_move.y += default_move_speed
     elif direction == "DOWN":
-        cube_to_move.y -= move_speed
+        cube_to_move.y -= default_move_speed
 
 # check if all cubes are destroyed
 def all_cubes_destroyed(cubes):
     return all(cube.is_destroyed for row in cubes for layer in row for cube in layer)
 
-# reset all cubes
+# # reset all cubes
 def reset_cubes(cubes):
-    # Logic to reset the cubes to their initial state
-    for x in range(-cube_size // 2, cube_size // 2):
-        for y in range(-cube_size // 2, cube_size // 2):
-            for z in range(-cube_size // 2, cube_size // 2):
-                cubes[x][y][z] = Cube(x, y, z)  # Recreate the cube
-                cube.reset_animation_state()  # Reset animation state
+    for x_idx in range(-cube_size // 2, cube_size // 2):
+        for y_idx in range(-cube_size // 2, cube_size // 2):
+            for z_idx in range(-cube_size // 2, cube_size // 2):
+                cubes[x_idx][y_idx][z_idx] = Cube(x_idx + start_position[0],
+                                                  y_idx + start_position[1],
+                                                  z_idx + start_position[2])
+                cube = cubes[x_idx][y_idx][z_idx]
+                cube.reset_animation_state()
+
+# def reset_cubes(cubes):
+#     # Logic to reset the cubes to their initial state
+#     for x in range(-cube_size // 2, cube_size // 2):
+#         for y in range(-cube_size // 2, cube_size // 2):
+#             for z in range(-cube_size // 2, cube_size // 2):
+#                 cubes[x][y][z] = Cube(x, y, z)  # Recreate the cube
+#                 cube.reset_animation_state()  # Reset animation state
 
 # flash the screen
 def flash_screen(duration=1000, steps=255):
@@ -556,42 +621,87 @@ while True:
     # Get the state of all keyboard keys
     keys = pygame.key.get_pressed()
 
+    # shift multiplier for movement speed
+    shift_multiplier = 3.0 if (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]) else 1.0
+
     # Handle keyboard events for movement
     if keys[pygame.K_LEFT] or keys[pygame.K_a]:
         for row in cubes:
             for layer in row:
                 for cube in layer:
-                    cube.x -= move_speed
+                    cube.x -= default_move_speed * shift_multiplier
+
     if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
         for row in cubes:
             for layer in row:
                 for cube in layer:
-                    cube.x += move_speed
+                    cube.x += default_move_speed * shift_multiplier
+
     if keys[pygame.K_UP] or keys[pygame.K_w]:
         for row in cubes:
             for layer in row:
                 for cube in layer:
-                    cube.y += move_speed
+                    cube.y += default_move_speed * shift_multiplier
+
     if keys[pygame.K_DOWN] or keys[pygame.K_s]:
         for row in cubes:
             for layer in row:
                 for cube in layer:
-                    cube.y -= move_speed
+                    cube.y -= default_move_speed * shift_multiplier
 
-    # *** Begin Z-Axis Movement Addition ***
-    # Handle Z-axis movement only when Shift is pressed
-    if keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]:
-        if keys[pygame.K_q]:
-            for row in cubes:
-                for layer in row:
-                    for cube in layer:
-                        cube.z += z_move_speed  # Move forward along Z-axis
-        if keys[pygame.K_e]:
-            for row in cubes:
-                for layer in row:
-                    for cube in layer:
-                        cube.z -= z_move_speed  # Move backward along Z-axis
-    # *** End Z-Axis Movement Addition ***
+    if keys[pygame.K_q]:
+        for row in cubes:
+            for layer in row:
+                for cube in layer:
+                    cube.z += z_default_move_speed * shift_multiplier
+
+    if keys[pygame.K_e]:
+        for row in cubes:
+            for layer in row:
+                for cube in layer:
+                    cube.z -= z_default_move_speed * shift_multiplier
+
+    # # *** Begin Z-Axis Movement Addition ***
+    # # Handle Z-axis movement only when Shift is pressed
+    # if keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]:
+    #     if keys[pygame.K_q]:
+    #         for row in cubes:
+    #             for layer in row:
+    #                 for cube in layer:
+    #                     cube.z += z_default_move_speed  # Move forward along Z-axis
+    #     if keys[pygame.K_e]:
+    #         for row in cubes:
+    #             for layer in row:
+    #                 for cube in layer:
+    #                     cube.z -= z_default_move_speed  # Move backward along Z-axis
+    # # *** End Z-Axis Movement Addition ***
+
+    # # Q or E always move along the Z-axis
+    # if keys[pygame.K_q]:
+    #     for row in cubes:
+    #         for layer in row:
+    #             for cube in layer:
+    #                 cube.z += z_default_move_speed  # Move forward along Z-axis
+
+    # if keys[pygame.K_e]:
+    #     for row in cubes:
+    #         for layer in row:
+    #             for cube in layer:
+    #                 cube.z -= z_default_move_speed  # Move backward along Z-axis
+
+    # # When Shift is held, A or D or LEFT or RIGHT also move along the Z-axis
+    # if (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]):
+    #     if keys[pygame.K_a] or keys[pygame.K_LEFT]:
+    #         for row in cubes:
+    #             for layer in row:
+    #                 for cube in layer:
+    #                     cube.z += z_default_move_speed  # Move forward along Z-axis
+
+    #     if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
+    #         for row in cubes:
+    #             for layer in row:
+    #                 for cube in layer:
+    #                     cube.z -= z_default_move_speed  # Move backward along Z-axis
 
     # Calculate delta time
     delta_time = pygame.time.get_ticks() / 1000.0
@@ -623,6 +733,12 @@ while True:
         apply_screen_shake()
 
     draw_scene()
+
+    glPushMatrix()        # Save the current transformation state
+    glLoadIdentity()      # Reset transformations
+    glTranslatef(*portal_position)
+    draw_portal()
+    glPopMatrix()         # Restore the original transformation state
 
     # Restore the original state after shake
     glPopMatrix()
