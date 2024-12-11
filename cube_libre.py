@@ -36,7 +36,7 @@ else:
 # Define the dimensions of the main cube
 cube_size = 5  # Number of small cubes per side
 cube_spacing = 1.0  # Increased spacing to avoid overlap
-cube_break_velocity_factor = 1.0  # Adjust this to make cubes fly off faster or slower
+cube_break_velocity_factor = 0.3  # Adjust this to make cubes fly off faster or slower
 
 # Calculate the step size for positioning small cubes
 step = cube_spacing
@@ -624,42 +624,60 @@ while True:
     # shift multiplier for movement speed
     shift_multiplier = 3.0 if (keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]) else 1.0
 
-    # Handle keyboard events for movement
-    if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-        for row in cubes:
-            for layer in row:
-                for cube in layer:
-                    cube.x -= default_move_speed * shift_multiplier
+    # Check if CTRL is pressed
+    ctrl_pressed = (keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL])
 
-    if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-        for row in cubes:
-            for layer in row:
-                for cube in layer:
-                    cube.x += default_move_speed * shift_multiplier
-
+    # Now handle movements
+    # Vertical movement (Y-axis)
     if keys[pygame.K_UP] or keys[pygame.K_w]:
         for row in cubes:
             for layer in row:
                 for cube in layer:
                     cube.y += default_move_speed * shift_multiplier
-
     if keys[pygame.K_DOWN] or keys[pygame.K_s]:
         for row in cubes:
             for layer in row:
                 for cube in layer:
                     cube.y -= default_move_speed * shift_multiplier
 
+    # Z-axis movement keys (Q/E) always move along Z-axis
     if keys[pygame.K_q]:
         for row in cubes:
             for layer in row:
                 for cube in layer:
                     cube.z += z_default_move_speed * shift_multiplier
-
     if keys[pygame.K_e]:
         for row in cubes:
             for layer in row:
                 for cube in layer:
                     cube.z -= z_default_move_speed * shift_multiplier
+
+    # If CTRL is pressed, A/D or LEFT/RIGHT move along Z-axis instead of X-axis
+    if ctrl_pressed:
+        # A/LEFT increase Z
+        if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+            for row in cubes:
+                for layer in row:
+                    for cube in layer:
+                        cube.z += z_default_move_speed * shift_multiplier
+        # D/RIGHT decrease Z
+        if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+            for row in cubes:
+                for layer in row:
+                    for cube in layer:
+                        cube.z -= z_default_move_speed * shift_multiplier
+    else:
+        # Normal behavior (no CTRL): A/LEFT and D/RIGHT move along X-axis
+        if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+            for row in cubes:
+                for layer in row:
+                    for cube in layer:
+                        cube.x -= default_move_speed * shift_multiplier
+        if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+            for row in cubes:
+                for layer in row:
+                    for cube in layer:
+                        cube.x += default_move_speed * shift_multiplier
 
     # # *** Begin Z-Axis Movement Addition ***
     # # Handle Z-axis movement only when Shift is pressed
