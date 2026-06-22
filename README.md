@@ -1,4 +1,4 @@
-_**NOTE:** There is a pygame-based prototype on these demos which is basically the game these were earliest tests of. For the new version, please visit: [cube-libre-pygame](https://github.com/FlyingFathead/cube-libre-pygame)_
+_**NOTE:** These are my old initial tests, there is now a pygame-based prototype that was derived from these early demos called "Cube Libre". For the Cube Libre game version, please visit: [cube-libre-pygame](https://github.com/FlyingFathead/cube-libre-pygame)_
 
 ![Cube Libre](https://github.com/FlyingFathead/pygame-opengl-polygon-demos/raw/main/cube_libre.jpg)
 
