@@ -1,3 +1,5 @@
+_**NOTE:** There is a pygame-based prototype on these demos which is basically the game these were earliest tests of. For the new version, please visit: [cube-libre-pygame](https://github.com/FlyingFathead/cube-libre-pygame)_
+
 ![Cube Libre](https://github.com/FlyingFathead/pygame-opengl-polygon-demos/raw/main/cube_libre.jpg)
 
 # OpenGL 3D cube-in-cube and other graphics demos
